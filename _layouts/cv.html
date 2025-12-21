@@ -1,0 +1,538 @@
+---
+layout: default
+panel_includes:
+  - toc
+---
+
+{% include lang.html %}
+{% include toc-status.html %}
+
+{% assign resume = site.data.resume %}
+{% assign cv_markdown = true %}
+{% if page.cv_markdown == false %}
+  {% assign cv_markdown = false %}
+{% endif %}
+
+<article class="px-1 cv cv-resume" data-toc="{{ enable_toc }}">
+  {% assign tab_key = page.title | downcase %}
+  {% assign title = site.data.locales[lang].tabs[tab_key] | default: page.title %}
+
+  {% if title %}
+    <h1 class="dynamic-title" data-toc-skip>
+      {{ title }}
+    </h1>
+  {% endif %}
+
+  {% if page.cv_pdf %}
+    <p class="cv-download">
+      <a class="btn btn-outline-primary" href="{{ page.cv_pdf | relative_url }}" target="_blank" rel="noopener">
+        Download PDF
+      </a>
+    </p>
+  {% endif %}
+
+  {% if enable_toc %}
+    <div id="toc-bar" class="d-flex align-items-center justify-content-between invisible">
+      <span class="label text-truncate">{{ title }}</span>
+      <button type="button" class="toc-trigger btn me-1">
+        <i class="fa-solid fa-list-ul fa-fw"></i>
+      </button>
+    </div>
+
+    <button id="toc-solo-trigger" type="button" class="toc-trigger btn btn-outline-secondary btn-sm">
+      <span class="label ps-2 pe-1">{{- site.data.locales[lang].panel.toc -}}</span>
+      <i class="fa-solid fa-angle-right fa-fw"></i>
+    </button>
+
+    <dialog id="toc-popup" class="p-0">
+      <div class="header d-flex flex-row align-items-center justify-content-between">
+        <div class="label text-truncate py-2 ms-4">{{- title -}}</div>
+        <button id="toc-popup-close" type="button" class="btn mx-1 my-1 opacity-75">
+          <i class="fas fa-close"></i>
+        </button>
+      </div>
+      <div id="toc-popup-content" class="px-4 py-3 pb-4"></div>
+    </dialog>
+  {% endif %}
+
+  <div class="content">
+    {{ content }}
+
+    {% if resume %}
+      <div class="cv-sections">
+        {% assign basics = resume.basics %}
+
+    {% if basics %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="basics" class="card-title my-2 mt-md-0">Basics</h2>
+            <dl class="cv-map">
+          {% if basics.name %}
+            <div class="cv-map-row">
+              <dt>Name</dt>
+              <dd>{{ basics.name }}</dd>
+            </div>
+          {% endif %}
+          {% if basics.label %}
+            <div class="cv-map-row">
+              <dt>Label</dt>
+              <dd>{{ basics.label }}</dd>
+            </div>
+          {% endif %}
+          {% if basics.email %}
+            <div class="cv-map-row">
+              <dt>Email</dt>
+              <dd><a href="mailto:{{ basics.email }}">{{ basics.email }}</a></dd>
+            </div>
+          {% endif %}
+          {% if basics.phone %}
+            <div class="cv-map-row">
+              <dt>Phone</dt>
+              <dd><a href="tel:{{ basics.phone }}">{{ basics.phone }}</a></dd>
+            </div>
+          {% endif %}
+          {% if basics.url %}
+            <div class="cv-map-row">
+              <dt>Website</dt>
+              <dd><a href="{{ basics.url }}" target="_blank" rel="noopener">{{ basics.url }}</a></dd>
+            </div>
+          {% endif %}
+          {% if basics.location %}
+            {% capture location %}
+              {%- if basics.location.address -%}{{ basics.location.address }}{%- endif -%}
+              {%- if basics.location.city -%}{% if basics.location.address %}, {% endif %}{{ basics.location.city }}{%- endif -%}
+              {%- if basics.location.region -%}{% if basics.location.address or basics.location.city %}, {% endif %}{{ basics.location.region }}{%- endif -%}
+              {%- if basics.location.postalCode -%}
+                {% if basics.location.address or basics.location.city or basics.location.region %} {{ basics.location.postalCode }}{% else %}{{ basics.location.postalCode }}{% endif %}
+              {%- endif -%}
+              {%- if basics.location.countryCode -%}{% if basics.location.address or basics.location.city or basics.location.region or basics.location.postalCode %}, {% endif %}{{ basics.location.countryCode }}{%- endif -%}
+            {% endcapture %}
+            {% assign location = location | strip %}
+            {% if location != "" %}
+              <div class="cv-map-row">
+                <dt>Location</dt>
+                <dd>{{ location }}</dd>
+              </div>
+            {% endif %}
+          {% endif %}
+          {% if basics.profiles and basics.profiles.size > 0 %}
+            <div class="cv-map-row">
+              <dt>Profiles</dt>
+              <dd class="cv-inline-list">
+                {% for profile in basics.profiles %}
+                  {% if profile.url %}
+                    <a href="{{ profile.url }}" target="_blank" rel="noopener">{{ profile.network }}</a>
+                  {% else %}
+                    <span>{{ profile.network }}</span>
+                  {% endif %}
+                  {% if profile.username %}
+                    <span class="cv-inline-meta">@{{ profile.username }}</span>
+                  {% endif %}
+                  {% unless forloop.last %}
+                    <span class="cv-inline-sep">&middot;</span>
+                  {% endunless %}
+                {% endfor %}
+              </dd>
+            </div>
+          {% endif %}
+            </dl>
+            {% if basics.summary %}
+              <p class="cv-summary">{% include cv/text.html text=basics.summary markdown=cv_markdown %}</p>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.work and resume.work.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="work" class="card-title my-2 mt-md-0">Work</h2>
+            <div class="cv-time-table">
+          {% for item in resume.work %}
+            {% capture date_range %}{{ item.startDate }}{% if item.endDate %} - {{ item.endDate }}{% else %} - Present{% endif %}{% endcapture %}
+            <div class="cv-time-row">
+              <div class="cv-time-date">{{ date_range | strip }}</div>
+              <div class="cv-time-content">
+                <div class="cv-time-header">
+                  {% if item.position %}
+                    <span class="cv-time-title">{{ item.position }}</span>
+                  {% endif %}
+                  {% if item.name %}
+                    <span class="cv-time-institution">
+                      {% if item.url %}
+                        <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.name }}</a>
+                      {% else %}
+                        {{ item.name }}
+                      {% endif %}
+                    </span>
+                  {% endif %}
+                </div>
+                {% if item.summary %}
+                  <div class="cv-time-summary">{% include cv/text.html text=item.summary markdown=cv_markdown %}</div>
+                {% endif %}
+                {% if item.highlights and item.highlights.size > 0 %}
+                  <ul class="cv-time-description">
+                    {% for highlight in item.highlights %}
+                      <li>{% include cv/text.html text=highlight markdown=cv_markdown %}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.volunteer and resume.volunteer.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="volunteer" class="card-title my-2 mt-md-0">Volunteer</h2>
+            <div class="cv-time-table">
+          {% for item in resume.volunteer %}
+            {% capture date_range %}{{ item.startDate }}{% if item.endDate %} - {{ item.endDate }}{% else %} - Present{% endif %}{% endcapture %}
+            <div class="cv-time-row">
+              <div class="cv-time-date">{{ date_range | strip }}</div>
+              <div class="cv-time-content">
+                <div class="cv-time-header">
+                  {% if item.position %}
+                    <span class="cv-time-title">{{ item.position }}</span>
+                  {% endif %}
+                  {% if item.organization %}
+                    <span class="cv-time-institution">
+                      {% if item.url %}
+                        <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.organization }}</a>
+                      {% else %}
+                        {{ item.organization }}
+                      {% endif %}
+                    </span>
+                  {% endif %}
+                </div>
+                {% if item.summary %}
+                  <div class="cv-time-summary">{% include cv/text.html text=item.summary markdown=cv_markdown %}</div>
+                {% endif %}
+                {% if item.highlights and item.highlights.size > 0 %}
+                  <ul class="cv-time-description">
+                    {% for highlight in item.highlights %}
+                      <li>{% include cv/text.html text=highlight markdown=cv_markdown %}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.education and resume.education.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="education" class="card-title my-2 mt-md-0">Education</h2>
+            <div class="cv-time-table">
+          {% for item in resume.education %}
+            {% capture date_range %}{{ item.startDate }}{% if item.endDate %} - {{ item.endDate }}{% else %} - Present{% endif %}{% endcapture %}
+            {% capture edu_title %}
+              {%- if item.studyType -%}{{ item.studyType }}{%- endif -%}
+              {%- if item.area -%}{% if item.studyType %} in {% endif %}{{ item.area }}{%- endif -%}
+            {% endcapture %}
+            {% assign edu_title = edu_title | strip %}
+            <div class="cv-time-row">
+              <div class="cv-time-date">{{ date_range | strip }}</div>
+              <div class="cv-time-content">
+                <div class="cv-time-header">
+                  {% if edu_title != "" %}
+                    <span class="cv-time-title">{{ edu_title }}</span>
+                  {% endif %}
+                  {% if item.institution %}
+                    <span class="cv-time-institution">
+                      {% if item.url %}
+                        <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.institution }}</a>
+                      {% else %}
+                        {{ item.institution }}
+                      {% endif %}
+                    </span>
+                  {% endif %}
+                  {% if item.score %}
+                    <span class="cv-time-meta">GPA {{ item.score }}</span>
+                  {% endif %}
+                </div>
+                {% if item.courses and item.courses.size > 0 %}
+                  <ul class="cv-time-description">
+                    {% for course in item.courses %}
+                      <li>{% include cv/text.html text=course markdown=cv_markdown %}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.projects and resume.projects.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="projects" class="card-title my-2 mt-md-0">Projects</h2>
+            <div class="cv-time-table">
+          {% for item in resume.projects %}
+            {% capture date_range %}{{ item.startDate }}{% if item.endDate %} - {{ item.endDate }}{% else %} - Present{% endif %}{% endcapture %}
+            <div class="cv-time-row">
+              <div class="cv-time-date">{{ date_range | strip }}</div>
+              <div class="cv-time-content">
+                <div class="cv-time-header">
+                  {% if item.name %}
+                    <span class="cv-time-title">
+                      {% if item.url %}
+                        <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.name }}</a>
+                      {% else %}
+                        {{ item.name }}
+                      {% endif %}
+                    </span>
+                  {% endif %}
+                </div>
+                {% if item.description %}
+                  <div class="cv-time-summary">{% include cv/text.html text=item.description markdown=cv_markdown %}</div>
+                {% endif %}
+                {% if item.highlights and item.highlights.size > 0 %}
+                  <ul class="cv-time-description">
+                    {% for highlight in item.highlights %}
+                      <li>{% include cv/text.html text=highlight markdown=cv_markdown %}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.awards and resume.awards.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="awards" class="card-title my-2 mt-md-0">Awards</h2>
+            <ul class="cv-list cv-entry-list">
+          {% for item in resume.awards %}
+            {% capture meta %}
+              {%- if item.awarder -%}{{ item.awarder }}{%- endif -%}
+              {%- if item.date -%}{% if item.awarder %} · {% endif %}{{ item.date }}{%- endif -%}
+            {% endcapture %}
+            {% assign meta = meta | strip %}
+            <li class="cv-entry">
+              <div class="cv-entry-header">
+                {% if item.title %}
+                  <span class="cv-entry-title">{{ item.title }}</span>
+                {% endif %}
+                {% if meta != "" %}
+                  <span class="cv-entry-meta">{{ meta }}</span>
+                {% endif %}
+              </div>
+              {% if item.summary %}
+                <div class="cv-entry-summary">{% include cv/text.html text=item.summary markdown=cv_markdown %}</div>
+              {% endif %}
+            </li>
+          {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.certificates and resume.certificates.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="certificates" class="card-title my-2 mt-md-0">Certificates</h2>
+            <ul class="cv-list cv-entry-list">
+          {% for item in resume.certificates %}
+            {% capture meta %}
+              {%- if item.issuer -%}{{ item.issuer }}{%- endif -%}
+              {%- if item.date -%}{% if item.issuer %} · {% endif %}{{ item.date }}{%- endif -%}
+            {% endcapture %}
+            {% assign meta = meta | strip %}
+            <li class="cv-entry">
+              <div class="cv-entry-header">
+                {% if item.name %}
+                  <span class="cv-entry-title">
+                    {% if item.url %}
+                      <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.name }}</a>
+                    {% else %}
+                      {{ item.name }}
+                    {% endif %}
+                  </span>
+                {% endif %}
+                {% if meta != "" %}
+                  <span class="cv-entry-meta">{{ meta }}</span>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.publications and resume.publications.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="publications" class="card-title my-2 mt-md-0">Publications</h2>
+            <ul class="cv-list cv-entry-list">
+          {% for item in resume.publications %}
+            {% capture meta %}
+              {%- if item.publisher -%}{{ item.publisher }}{%- endif -%}
+              {%- if item.releaseDate -%}{% if item.publisher %} · {% endif %}{{ item.releaseDate }}{%- endif -%}
+            {% endcapture %}
+            {% assign meta = meta | strip %}
+            <li class="cv-entry">
+              <div class="cv-entry-header">
+                {% if item.name %}
+                  <span class="cv-entry-title">
+                    {% if item.url %}
+                      <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.name }}</a>
+                    {% else %}
+                      {{ item.name }}
+                    {% endif %}
+                  </span>
+                {% endif %}
+                {% if meta != "" %}
+                  <span class="cv-entry-meta">{{ meta }}</span>
+                {% endif %}
+              </div>
+              {% if item.summary %}
+                <div class="cv-entry-summary">{% include cv/text.html text=item.summary markdown=cv_markdown %}</div>
+              {% endif %}
+            </li>
+          {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.skills and resume.skills.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="skills" class="card-title my-2 mt-md-0">Skills</h2>
+            <ul class="cv-nested-list">
+          {% for item in resume.skills %}
+            <li>
+              <div class="cv-nested-title">
+                {{ item.name }}
+                {% if item.level %}
+                  <span class="cv-skill-level">{{ item.level }}</span>
+                {% endif %}
+              </div>
+              {% if item.keywords and item.keywords.size > 0 %}
+                <ul>
+                  {% for keyword in item.keywords %}
+                    <li>{% include cv/text.html text=keyword markdown=cv_markdown %}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </li>
+          {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.languages and resume.languages.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="languages" class="card-title my-2 mt-md-0">Languages</h2>
+            <ul class="cv-list cv-entry-list">
+          {% for item in resume.languages %}
+            {% capture language_line %}
+              {%- if item.language -%}{{ item.language }}{%- endif -%}
+              {%- if item.fluency -%}{% if item.language %} - {% endif %}{{ item.fluency }}{%- endif -%}
+            {% endcapture %}
+            {% assign language_line = language_line | strip %}
+            {% if language_line != "" %}
+              <li class="cv-entry">
+                <div class="cv-entry-header">
+                  <span class="cv-entry-title">{{ language_line }}</span>
+                </div>
+              </li>
+            {% endif %}
+          {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.interests and resume.interests.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="interests" class="card-title my-2 mt-md-0">Interests</h2>
+            <ul class="cv-nested-list">
+          {% for item in resume.interests %}
+            <li>
+              <div class="cv-nested-title">{{ item.name }}</div>
+              {% if item.keywords and item.keywords.size > 0 %}
+                <ul>
+                  {% for keyword in item.keywords %}
+                    <li>{% include cv/text.html text=keyword markdown=cv_markdown %}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </li>
+          {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+
+    {% if resume.references and resume.references.size > 0 %}
+      <section class="cv-section card-wrapper">
+        <div class="post-preview">
+          <div class="card-body">
+            <h2 id="references" class="card-title my-2 mt-md-0">References</h2>
+            <ul class="cv-list cv-entry-list">
+          {% for item in resume.references %}
+            <li class="cv-entry">
+              <div class="cv-entry-header">
+                {% if item.name %}
+                  <span class="cv-entry-title">{{ item.name }}</span>
+                {% endif %}
+              </div>
+              {% if item.reference %}
+                <div class="cv-entry-summary">{% include cv/text.html text=item.reference markdown=cv_markdown %}</div>
+              {% endif %}
+            </li>
+          {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+      </div>
+    {% else %}
+      <p>Add a JSON resume to <code>_data/resume.json</code> to populate this page.</p>
+    {% endif %}
+  </div>
+</article>

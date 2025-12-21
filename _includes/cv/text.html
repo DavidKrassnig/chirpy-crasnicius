@@ -1,0 +1,7 @@
+{%- if include.text -%}
+  {%- if include.markdown -%}
+    {{ include.text | markdownify | remove: '<p>' | remove: '</p>' | strip }}
+  {%- else -%}
+    {{ include.text | strip }}
+  {%- endif -%}
+{%- endif -%}

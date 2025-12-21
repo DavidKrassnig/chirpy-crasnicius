@@ -11,10 +11,20 @@
     {{- '©' }}
     <time>{{ 'now' | date: '%Y' }}</time>
 
-    {% if site.social.links %}
-      <a href="{{ site.social.links[0] }}">{{ site.social.name }}</a>.
+    {% assign resume_basics = site.data.resume.basics %}
+    {% assign footer_name = resume_basics.name | default: site.social.name %}
+    {% if resume_basics and resume_basics.url %}
+      {% assign footer_link = resume_basics.url %}
+    {% elsif site.social.links %}
+      {% assign footer_link = site.social.links[0] %}
     {% else %}
-      <em class="fst-normal">{{ site.social.name }}</em>.
+      {% assign footer_link = nil %}
+    {% endif %}
+
+    {% if footer_link %}
+      <a href="{{ footer_link }}">{{ footer_name }}</a>.
+    {% else %}
+      <em class="fst-normal">{{ footer_name }}</em>.
     {% endif %}
 
     {% if site.data.locales[include.lang].copyright.brief %}
